@@ -275,13 +275,18 @@ main.chatting .note{display:block}
 <div class="toast" id="toast"></div>
 
 <script>
-/* ============================================================
-   الإعدادات — ضع مفتاح Groq هنا
-   احصل عليه مجانًا من: https://console.groq.com/keys
-   ============================================================ */
-const GROQ_API_KEY = "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";
-
+/* API keys are stored locally for personal use only; don't publish real keys in this HTML. */
 const API_URL = "https://api.groq.com/openai/v1/chat/completions";
+const CF_MODEL = "@cf/meta/llama-3.1-8b-instruct";
+const PROVIDER_DEFAULTS = { provider: "groq", groqKeys: [], cfKeys: [], cfAccountId: "" };
+let apiConfig = storeSafeConfig();
+function storeSafeConfig(){
+  try { return { ...PROVIDER_DEFAULTS, ...JSON.parse(localStorage.getItem("bilalx_api_config") || "{}") }; }
+  catch { return { ...PROVIDER_DEFAULTS }; }
+}
+function saveApiConfig(v){ apiConfig = v; try { localStorage.setItem("bilalx_api_config", JSON.stringify(v)); } catch {} }
+function validKeys(list){ return (Array.isArray(list) ? list : []).map(x => String(x || "").trim()).filter(Boolean).slice(0,5); }
+let groqKeyIndex = 0, cfKeyIndex = 0;
 const BASE_PROMPT = "أنت BILALX، مساعد ذكاء اصطناعي ودود وذكي. أجب بنفس لغة المستخدم وبشكل واضح ومنظم. استخدم Markdown عند الحاجة، وضع الأكواد داخل كتل برمجية.";
 const CODE_PROMPT = "ركّز على البرمجة: قدّم أكواداً كاملة وصحيحة داخل كتل برمجية مع شرح مختصر للخطوات.";
 const MODELS = [
@@ -348,13 +353,26 @@ function modelsModal(){
 }
 function settingsModal(){
   openModal(c => {
-    c.append(h("h3", {}, "الإعدادات"));
-    c.append(h("label", { for: "customTxt" }, "تعليمات مخصصة لـ BILALX (اختياري)"));
-    const ta = h("textarea", { id: "customTxt", dir: "auto", placeholder: "مثال: خاطبني باسم بلال وأجب باختصار" }); ta.value = custom;
-    c.append(ta);
+    c.append(h("h3", {}, "الإعدادات ومفاتيح API"));
+    c.append(h("label", {}, "مزود الذكاء الاصطناعي"));
+    const provider = h("select", { id:"apiProvider", style:"width:100%;padding:10px;border-radius:10px;background:var(--surface);color:var(--text);border:1px solid var(--line2)" });
+    [["groq","Groq"],["cloudflare","Cloudflare Workers AI"]].forEach(([v,t]) => provider.append(h("option",{value:v},t)));
+    provider.value = apiConfig.provider; c.append(provider);
+    c.append(h("label", { for:"groqKeys" }, "مفاتيح Groq (حتى 5، مفتاح في كل سطر)"));
+    const g = h("textarea", { id:"groqKeys", dir:"ltr", placeholder:"gsk_..."}); g.value = (apiConfig.groqKeys||[]).join("\n"); c.append(g);
+    c.append(h("label", { for:"cfAccount" }, "Cloudflare Account ID"));
+    const account = h("input", { id:"cfAccount", dir:"ltr", placeholder:"Account ID", style:"width:100%;padding:10px;border-radius:10px;background:var(--surface);color:var(--text);border:1px solid var(--line2)" }); account.value = apiConfig.cfAccountId || ""; c.append(account);
+    c.append(h("label", { for:"cfKeys" }, "مفاتيح Cloudflare API Token (حتى 5، مفتاح في كل سطر)"));
+    const cf = h("textarea", { id:"cfKeys", dir:"ltr", placeholder:"Cloudflare API token"}); cf.value = (apiConfig.cfKeys||[]).join("\n"); c.append(cf);
+    c.append(h("small", {}, "تنبيه أمان: المفاتيح في المتصفح ليست سرية. لا تنشر الملف بمفاتيح حقيقية؛ استخدم خادماً وسيطاً لحمايتها."));
+    c.append(h("label", { for: "customTxt" }, "تعليمات مخصصة (اختياري)"));
+    const ta = h("textarea", { id: "customTxt", dir: "auto", placeholder: "مثال: أجب باختصار" }); ta.value = custom; c.append(ta);
     c.append(h("div", { class: "mbtns" },
-      h("button", { class: "btn pri", onclick: () => { custom = ta.value.trim(); store.set("bilalx_custom", custom); closeModal(); toast("تم الحفظ") } }, "حفظ"),
-      h("button", { class: "btn", onclick: () => { exportChat(); } }, "تصدير المحادثة الحالية"),
+      h("button", { class: "btn pri", onclick: () => {
+        saveApiConfig({ provider:provider.value, groqKeys:validKeys(g.value.split(/\\r?\\n/)), cfKeys:validKeys(cf.value.split(/\\r?\\n/)), cfAccountId:account.value.trim() });
+        custom = ta.value.trim(); store.set("bilalx_custom", custom); closeModal(); toast("تم حفظ الإعدادات");
+      } }, "حفظ"),
+      h("button", { class: "btn", onclick: () => exportChat() }, "تصدير المحادثة الحالية"),
       h("button", { class: "btn dng", onclick: () => { closeModal(); clearAll() } }, "حذف كل المحادثات")
     ));
   });
@@ -511,10 +529,10 @@ function setBusy(v){
 async function send(){
   let text = $("input").value.trim();
   if ((!text && !pendingFile) || busy) return;
-  if (!GROQ_API_KEY || GROQ_API_KEY.includes("ضع_مفتاح")) {
-    alert("لم يتم وضع مفتاح Groq بعد. افتح الملف index.html وضع المفتاح في المتغير GROQ_API_KEY.");
-    return;
-  }
+  const provider = apiConfig.provider === "cloudflare" ? "cloudflare" : "groq";
+  const keys = validKeys(provider === "cloudflare" ? apiConfig.cfKeys : apiConfig.groqKeys);
+  if (!keys.length) { alert("أضف مفتاح API واحداً على الأقل من الإعدادات."); return; }
+  if (provider === "cloudflare" && !apiConfig.cfAccountId) { alert("أضف Cloudflare Account ID من الإعدادات."); return; }
   let shown = text, content = text;
   if (pendingFile) {
     const f = pendingFile;
@@ -542,36 +560,50 @@ async function send(){
   let full = "";
 
   try {
-    const res = await fetch(API_URL, {
-      method: "POST",
-      signal: controller.signal,
-      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + GROQ_API_KEY },
-      body: JSON.stringify({
-        model, stream: true, temperature: 0.7,
-        messages: [{ role: "system", content: systemPrompt() }, ...c.messages.slice(-30).map(m => ({ role: m.role, content: m.content }))]
-      })
-    });
-    if (!res.ok) {
-      let detail = ""; try{ detail = (await res.json()).error?.message || "" }catch(e){}
-      throw new Error(res.status === 401 ? "مفتاح Groq غير صحيح أو منتهي." :
-                      res.status === 429 ? "تجاوزت الحد المجاني مؤقتاً. حاول بعد قليل." :
-                      res.status === 413 ? "الرسالة أو الملف كبير جداً." :
-                      (res.status === 404 || /does not exist|do not have access/i.test(detail)) ? "هذا النموذج غير متاح لحسابك. اختر نموذجاً آخر من «النماذج» في القائمة." :
-                      (detail || "خطأ " + res.status));
+    let res, lastError;
+    for (let attempt = 0; attempt < keys.length; attempt++) {
+      const idx = provider === "cloudflare" ? (cfKeyIndex + attempt) % keys.length : (groqKeyIndex + attempt) % keys.length;
+      const key = keys[idx];
+      try {
+        if (provider === "groq") {
+          res = await fetch(API_URL, { method:"POST", signal:controller.signal,
+            headers:{"Content-Type":"application/json","Authorization":"Bearer "+key},
+            body:JSON.stringify({model,stream:true,temperature:0.7,messages:[{role:"system",content:systemPrompt()},...c.messages.slice(-30).map(m=>({role:m.role,content:m.content}))]}) });
+        } else {
+          res = await fetch("https://api.cloudflare.com/client/v4/accounts/"+encodeURIComponent(apiConfig.cfAccountId)+"/ai/run/"+encodeURIComponent(CF_MODEL), {
+            method:"POST", signal:controller.signal,
+            headers:{"Content-Type":"application/json","Authorization":"Bearer "+key},
+            body:JSON.stringify({messages:[{role:"system",content:systemPrompt()},...c.messages.slice(-30).map(m=>({role:m.role,content:m.content}))]}) });
+        }
+        if (res.ok) {
+          if (provider === "cloudflare") cfKeyIndex = idx; else groqKeyIndex = idx;
+          break;
+        }
+        let detail = ""; try { const errBody = await res.json(); detail = errBody.error?.message || errBody.errors?.[0]?.message || ""; } catch {}
+        lastError = new Error(res.status === 401 ? "مفتاح API غير صحيح أو منتهي." : res.status === 429 ? "تم تجاوز الحد مؤقتاً." : detail || ("خطأ "+res.status));
+        res = null;
+      } catch (err) { if (err.name === "AbortError") throw err; lastError = err; res = null; }
     }
-    const reader = res.body.getReader(), dec = new TextDecoder();
-    let buf = "", last = 0;
-    while (true) {
-      const { done, value } = await reader.read(); if (done) break;
-      buf += dec.decode(value, { stream: true });
-      const lines = buf.split("\n"); buf = lines.pop();
-      for (const l of lines) {
-        const s = l.trim(); if (!s.startsWith("data:")) continue;
-        const d = s.slice(5).trim(); if (d === "[DONE]") continue;
-        try { full += JSON.parse(d).choices?.[0]?.delta?.content || "" } catch(e){}
+    if (!res) throw lastError || new Error("تعذر الاتصال بمزود الذكاء الاصطناعي.");
+    if (provider === "cloudflare") {
+      const data = await res.json();
+      full = data.result?.response || data.result?.output || "";
+      if (!full) throw new Error("لم يرجع Cloudflare نصاً؛ تحقق من النموذج وصلاحيات المفتاح.");
+    } else {
+      const reader = res.body.getReader(), dec = new TextDecoder();
+      let buf = "", last = 0;
+      while (true) {
+        const {done,value} = await reader.read(); if (done) break;
+        buf += dec.decode(value,{stream:true});
+        const lines = buf.split("\\n"); buf = lines.pop();
+        for (const l of lines) {
+          const line = l.trim(); if (!line.startsWith("data:")) continue;
+          const d = line.slice(5).trim(); if (d === "[DONE]") continue;
+          try { full += JSON.parse(d).choices?.[0]?.delta?.content || ""; } catch {}
+        }
+        const now = performance.now();
+        if (now-last > 60) { bubble.replaceChildren(render(full)); scrollDown(); last = now; }
       }
-      const now = performance.now();
-      if (now - last > 60) { bubble.replaceChildren(render(full)); scrollDown(); last = now }
     }
     bubble.replaceChildren(render(full)); bubble.appendChild(actionsFor(full));
     c.messages.push({ role: "assistant", content: full }); save();
