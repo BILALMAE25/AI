@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="ar" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#04040a">
+<title>BILALX — مساعدك الذكي في كل ما تحتاجه</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%23a06bff'/><stop offset='1' stop-color='%232f8cff'/></linearGradient></defs><rect width='100' height='100' rx='24' fill='%2306060e'/><text x='50' y='70' font-size='58' font-family='Arial' font-weight='800' text-anchor='middle' fill='url(%23g)'>BX</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+<style>
+:root{
+  --bg:#04040a; --side:#07070d; --surface:#0c0c16; --surface2:#14141f;
+  --line:rgba(255,255,255,.07); --line2:rgba(255,255,255,.11);
+  --text:#ececf4; --soft:#b6b6ca; --muted:#8a8aa0;
+  --accent:#7c6cff; --accent2:#5f4fff; --purple:#8b5cf6;
+  --danger:#ff6b81; --arc:1;
+  --font:'IBM Plex Sans Arabic','Lexend','Segoe UI',Tahoma,sans-serif;
+}
+:root[data-theme="light"]{
+  --bg:#f5f5fb; --side:#ffffff; --surface:#ffffff; --surface2:#ececf6;
+  --line:rgba(20,20,70,.09); --line2:rgba(20,20,70,.16);
+  --text:#13132b; --soft:#454560; --muted:#74748e; --arc:.4;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:16px;line-height:1.7;display:flex;overflow:hidden;direction:ltr}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.defs{position:absolute;width:0;height:0}
+
+/* ===== Sidebar ===== */
+.sidebar{width:270px;flex-shrink:0;display:flex;flex-direction:column;background:var(--side);border-right:1px solid var(--line);z-index:30;transition:transform .25s}
+.side-head{display:flex;align-items:center;justify-content:space-between;padding:0 24px 0 26px;height:86px;flex-shrink:0}
+.logo-sm{display:flex;align-items:center;gap:12px}
+.logo-sm svg{width:42px;height:27px}
+.word{font-family:'Lexend',sans-serif;font-weight:700;letter-spacing:.28em;color:var(--text)}
+.word b{font-weight:700;background:linear-gradient(135deg,#a56bff,#5b6bff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.logo-sm .word{font-size:15px;letter-spacing:.24em}
+.ghost{color:var(--muted);padding:6px;border-radius:8px;display:grid;place-items:center}
+.ghost:hover{color:var(--text);background:var(--surface2)}
+.nav{padding:0 17px;display:flex;flex-direction:column;gap:3px}
+.nav button{display:flex;align-items:center;gap:14px;height:44px;padding:0 15px;border-radius:11px;color:var(--muted);font-size:14.5px;text-align:left;transition:background .15s,color .15s;width:100%}
+.nav button:hover{color:var(--text);background:rgba(128,128,170,.08)}
+.nav button.active{background:var(--surface2);color:var(--text)}
+.sub{flex:1;min-height:0;overflow-y:auto;padding:12px 17px 8px;display:flex;flex-direction:column;gap:2px}
+.sub::-webkit-scrollbar,#chat::-webkit-scrollbar{width:6px}
+.sub::-webkit-scrollbar-thumb,#chat::-webkit-scrollbar-thumb{background:var(--line2);border-radius:6px}
+.sub h5{font-size:12px;font-weight:500;color:var(--muted);padding:4px 15px 6px;direction:rtl;text-align:left}
+.row{display:flex;align-items:center;gap:4px;border-radius:10px;padding:0 6px 0 4px;transition:background .15s}
+.row:hover,.row.cur{background:rgba(128,128,170,.1)}
+.row .t{flex:1;min-width:0;text-align:left;padding:9px 11px;font-size:14px;color:var(--soft);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;direction:rtl}
+.row .mini{opacity:0;color:var(--muted);padding:5px;border-radius:7px;display:grid;place-items:center}
+.row .mini svg{width:16px;height:16px}
+.row:hover .mini,.row.cur .mini,.row .mini.on{opacity:1}
+.row .mini.on{color:var(--accent)}
+.row .mini:hover{color:var(--text)}
+.row .mini.del:hover{color:var(--danger)}
+.none{color:var(--muted);font-size:13.5px;padding:8px 15px;direction:rtl;text-align:left}
+.user{display:flex;align-items:center;gap:14px;padding:0 24px;height:94px;border-top:1px solid var(--line);flex-shrink:0;text-align:left;width:100%}
+.user:hover{background:rgba(128,128,170,.05)}
+.user .av{width:42px;height:42px;border-radius:50%;background:var(--surface2);display:grid;place-items:center;color:var(--soft)}
+.user .nm{flex:1;line-height:1.35}
+.user .nm span{display:block;font-size:14.5px}
+.user .nm small{display:block;font-size:12px;color:var(--muted);font-family:'Lexend',sans-serif}
+.user svg.i{width:16px;height:16px;color:var(--muted)}
+
+/* ===== Main ===== */
+main{flex:1;min-width:0;position:relative;display:flex;flex-direction:column;overflow:hidden;
+  background:radial-gradient(1100px 420px at 50% 108%,rgba(80,60,220,calc(.16*var(--arc))),transparent 70%),var(--bg)}
+.arc{position:absolute;left:50%;top:81.5%;width:1400px;height:1400px;transform:translateX(-50%);border-radius:50%;pointer-events:none;z-index:0;opacity:var(--arc);
+  box-shadow:0 -1px 2px rgba(180,160,255,.95),0 -7px 28px rgba(120,100,255,.6),0 -34px 90px rgba(90,70,235,.38),
+             inset 0 2px 3px rgba(160,140,255,.85),inset 0 16px 70px rgba(100,80,255,.34);
+  -webkit-mask-image:linear-gradient(90deg,transparent 16%,#000 52%);mask-image:linear-gradient(90deg,transparent 16%,#000 52%);
+  transition:opacity .4s}
+main.chatting .arc{opacity:calc(var(--arc)*.45)}
+.theme-pill{position:absolute;top:19px;right:21px;z-index:5;display:flex;align-items:center;gap:2px;padding:3px;border-radius:999px;background:var(--surface);border:1px solid var(--line)}
+.theme-pill button{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;color:var(--muted)}
+.theme-pill button svg{width:15px;height:15px}
+.theme-pill button.on{background:var(--surface2);color:var(--text)}
+.menu-btn{display:none;position:absolute;top:14px;left:14px;z-index:5;width:42px;height:42px;border-radius:50%;background:var(--surface);border:1px solid var(--line);place-items:center;color:var(--soft)}
+
+#chat{display:none;flex:1;overflow-y:auto;position:relative;z-index:1;scroll-behavior:smooth;padding-top:56px}
+main.chatting #chat{display:block}
+.wrap{max-width:820px;margin:0 auto;padding:8px 20px 24px;direction:rtl}
+.msg{display:flex;gap:14px;padding:14px 0}
+.msg .bubble{min-width:0}
+.msg.me .bubble{background:var(--surface2);border:1px solid var(--line);padding:10px 18px;border-radius:22px;max-width:82%;white-space:pre-wrap;word-break:break-word}
+.msg.me .bubble small{display:block;color:var(--muted);font-size:12.5px;margin-top:4px;direction:rtl}
+.mark{width:32px;height:32px;border-radius:10px;background:#0a0a14;border:1px solid var(--line2);display:grid;place-items:center;flex-shrink:0;margin-top:2px}
+.mark svg{width:20px;height:13px}
+.msg.bot .bubble{flex:1;overflow-wrap:anywhere}
+.md>*:first-child{margin-top:0}.md>*:last-child{margin-bottom:0}
+.md p{margin:0 0 12px}
+.md ul,.md ol{margin:0 0 12px;padding-inline-start:24px}
+.md li{margin:4px 0}
+.md h1,.md h2,.md h3{margin:18px 0 8px;line-height:1.4}
+.md h1{font-size:22px}.md h2{font-size:19px}.md h3{font-size:17px}
+.md a{color:#9d90ff}
+.md blockquote{border-inline-start:3px solid var(--accent);padding-inline-start:14px;color:var(--muted);margin:0 0 12px}
+.md code{background:rgba(128,128,200,.16);padding:2px 6px;border-radius:6px;font-size:.88em;direction:ltr;unicode-bidi:embed;font-family:ui-monospace,Consolas,monospace}
+.md pre{direction:ltr;text-align:left;background:#07070f;border:1px solid var(--line2);border-radius:14px;margin:0 0 14px;overflow:hidden}
+.md pre .bar{display:flex;justify-content:space-between;align-items:center;padding:6px 14px;background:rgba(124,108,255,.16);color:#c9c3ff;font-size:12.5px;font-family:ui-monospace,Consolas,monospace}
+.md pre .bar button{color:#c9c3ff;font-size:12.5px;padding:2px 8px;border-radius:6px}
+.md pre .bar button:hover{background:rgba(255,255,255,.12)}
+.md pre code{display:block;background:transparent;padding:14px;overflow-x:auto;font-size:13.5px;line-height:1.6;color:#e6e6e6}
+.md table{border-collapse:collapse;margin:0 0 14px;display:block;overflow-x:auto}
+.md th,.md td{border:1px solid var(--line2);padding:7px 12px}
+.md th{background:rgba(124,108,255,.14)}
+.actions{display:flex;gap:4px;margin-top:6px}
+.actions button{color:var(--muted);font-size:13px;padding:4px 10px;border-radius:999px}
+.actions button:hover{background:var(--surface2);color:var(--text)}
+.typing{display:inline-flex;gap:5px;padding:10px 0}
+.typing i{width:7px;height:7px;border-radius:50%;background:var(--accent);animation:b 1.2s infinite}
+.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+@keyframes b{0%,60%,100%{opacity:.3;transform:translateY(0)}30%{opacity:1;transform:translateY(-4px)}}
+.err{color:var(--danger);font-size:14.5px}
+
+/* Stage: hero + composer */
+.stage{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;width:100%;padding:0 24px}
+main.empty .stage{flex:1;justify-content:center;padding-bottom:13vh}
+main.chatting .stage{padding:6px 24px calc(18px + env(safe-area-inset-bottom))}
+.hero{display:flex;flex-direction:column;align-items:center;text-align:center}
+main.chatting .hero,main.chatting .chips{display:none}
+.logo-lg svg{width:110px;height:67px;filter:drop-shadow(0 0 20px rgba(120,100,255,.6))}
+.hero .word{font-size:35px;margin-top:20px;margin-right:-.28em;line-height:1.1}
+.hero p{margin-top:28px;color:var(--muted);font-size:17px;font-weight:300}
+.cwrap{width:100%;max-width:796px}
+main.empty .cwrap{margin-top:32px}
+main.chatting .cwrap{max-width:820px}
+.attach{display:none;direction:rtl;margin:0 0 10px 8px}
+.attach.show{display:flex}
+.attach span{display:inline-flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--line2);padding:5px 8px 5px 14px;border-radius:999px;font-size:13px;color:var(--soft)}
+.attach button{color:var(--muted);padding:0 4px}
+.attach button:hover{color:var(--danger)}
+.pill{display:flex;align-items:center;gap:10px;direction:ltr;min-height:72px;padding:10px 15px 10px 22px;border-radius:999px;background:var(--surface);border:1px solid var(--line2);box-shadow:0 8px 40px rgba(0,0,0,.25);transition:border-color .2s}
+main.chatting .pill{min-height:58px;padding-top:7px;padding-bottom:7px}
+.pill:focus-within{border-color:rgba(124,108,255,.5)}
+.clip{color:var(--muted);padding:6px;border-radius:50%;display:grid;place-items:center;flex-shrink:0}
+.clip:hover{color:var(--text)}
+textarea{flex:1;min-width:0;resize:none;border:none;outline:none;background:transparent;color:var(--text);font-family:inherit;font-size:16px;line-height:1.6;padding:8px 6px;max-height:170px;min-height:28px;margin-left:8px}
+textarea::placeholder{color:var(--muted)}
+.send{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#8b7dff,#6a5aff);display:grid;place-items:center;flex-shrink:0;color:#fff;box-shadow:0 4px 20px rgba(110,90,255,.45);transition:opacity .15s,transform .15s}
+.send svg{width:19px;height:19px}
+.send:hover:not(:disabled){transform:scale(1.07)}
+.send:disabled{opacity:.4;cursor:default;box-shadow:none}
+.chips{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;direction:rtl;margin-top:41px}
+.chip{display:inline-flex;align-items:center;gap:10px;direction:ltr;height:48px;padding:0 26px;border-radius:999px;border:1px solid var(--line2);color:var(--soft);font-size:14px;transition:border-color .2s,color .2s,background .2s}
+.chip svg{width:18px;height:18px}
+.chip:hover{border-color:rgba(124,108,255,.55);color:var(--text)}
+.chip.on{border-color:var(--accent);color:#fff;background:rgba(124,108,255,.18)}
+.note{display:none;text-align:center;color:var(--muted);font-size:12px;margin-top:8px}
+main.chatting .note{display:block}
+
+/* Modal + toast */
+.modal{position:fixed;inset:0;z-index:60;background:rgba(2,2,10,.62);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;padding:20px}
+.modal.show{display:flex}
+.mcard{direction:rtl;width:min(460px,100%);max-height:86vh;overflow-y:auto;background:var(--side);border:1px solid var(--line2);border-radius:22px;padding:22px}
+.mcard h3{font-size:18px;margin-bottom:14px}
+.mcard label{display:block;font-size:13.5px;color:var(--muted);margin:12px 0 6px}
+.mcard textarea{margin:0;width:100%;min-height:96px;background:var(--surface);border:1px solid var(--line2);border-radius:14px;padding:12px;font-size:14.5px}
+.opt{display:flex;flex-direction:column;align-items:flex-start;width:100%;text-align:right;padding:12px 16px;border-radius:14px;border:1px solid var(--line);margin-bottom:8px}
+.opt:hover{border-color:var(--line2)}
+.opt.on{border-color:var(--accent);background:rgba(124,108,255,.12)}
+.opt small{color:var(--muted);font-size:12.5px}
+.mbtns{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
+.btn{padding:10px 18px;border-radius:12px;background:var(--surface2);border:1px solid var(--line2);font-size:14px}
+.btn:hover{border-color:var(--line2);filter:brightness(1.15)}
+.btn.pri{background:linear-gradient(135deg,#8b7dff,#6a5aff);border-color:transparent;color:#fff}
+.btn.dng{color:var(--danger)}
+.toast{position:fixed;bottom:28px;left:50%;transform:translate(-50%,20px);opacity:0;pointer-events:none;background:var(--surface2);border:1px solid var(--line2);padding:10px 20px;border-radius:999px;font-size:14px;z-index:80;transition:all .25s;direction:rtl}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.overlay{display:none}
+
+@media(max-width:860px){
+  .sidebar{position:fixed;inset-block:0;left:0;transform:translateX(-102%);width:min(290px,86vw);box-shadow:0 0 60px rgba(0,0,0,.6)}
+  .sidebar.open{transform:none}
+  .overlay.show{display:block;position:fixed;inset:0;background:rgba(2,2,10,.6);z-index:20}
+  .menu-btn{display:grid}
+  .arc{width:900px;height:900px}
+  .hero .word{font-size:28px}
+  .logo-lg svg{width:92px;height:56px}
+  .chip{height:44px;padding:0 18px}
+  main.empty .stage{padding-bottom:8vh}
+}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+
+<!-- شعار BX -->
+<svg class="defs" aria-hidden="true">
+  <defs>
+    <linearGradient id="gB" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset=".55" stop-color="#cbbfff"/><stop offset="1" stop-color="#8a64ff"/></linearGradient>
+    <linearGradient id="gX1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#a45cff"/><stop offset="1" stop-color="#2f8cff"/></linearGradient>
+    <linearGradient id="gX2" x1="1" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7a5cff"/><stop offset="1" stop-color="#29a3ff"/></linearGradient>
+  </defs>
+  <symbol id="logo" viewBox="0 0 122 72">
+    <path fill="url(#gB)" fill-rule="evenodd" d="M4 4H44Q60 4 60 20Q60 29 52 33Q62 37 62 50Q62 68 44 68H4ZM20 17H42Q46 17 46 21Q46 25 42 25H20ZM20 46H44Q49 46 49 50Q49 55 44 55H20Z"/>
+    <path fill="url(#gX1)" d="M60 4H82L118 68H96Z"/>
+    <path fill="url(#gX2)" opacity=".92" d="M120 4H98L64 68H86Z"/>
+  </symbol>
+</svg>
+
+<div class="overlay" id="overlay"></div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="side-head">
+    <div class="logo-sm"><svg><use href="#logo"/></svg><span class="word">BILAL<b>X</b></span></div>
+    <button class="ghost" id="newIcon" aria-label="محادثة جديدة" title="محادثة جديدة">
+      <svg class="i" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="4"/><path d="M12 8.5v7M8.5 12h7"/></svg>
+    </button>
+  </div>
+  <nav class="nav">
+    <button data-act="new" class="active"><svg class="i" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="4.5"/><circle cx="12" cy="12" r="2.6"/></svg>محادثة جديدة</button>
+    <button data-act="history"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>المحادثات</button>
+    <button data-act="bookmarks"><svg class="i" viewBox="0 0 24 24"><path d="M6.5 4h11a1 1 0 0 1 1 1v15l-6.5-4-6.5 4V5a1 1 0 0 1 1-1z"/></svg>العلامات</button>
+    <button data-act="models"><svg class="i" viewBox="0 0 24 24"><path d="M12 3 20 7.5v9L12 21l-8-4.5v-9z"/><path d="m4 7.5 8 4.5 8-4.5M12 12v9"/></svg>النماذج</button>
+    <button data-act="settings"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>الإعدادات</button>
+  </nav>
+  <div class="sub" id="sub"></div>
+  <button class="user" id="userBtn">
+    <span class="av"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="3.6"/><path d="M5 20c.6-3.6 3.4-5.6 7-5.6s6.4 2 7 5.6"/></svg></span>
+    <span class="nm"><span>مستخدم</span><small>Free</small></span>
+    <svg class="i" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>
+  </button>
+</aside>
+
+<main id="main" class="empty">
+  <div class="arc"></div>
+  <button class="menu-btn" id="menuBtn" aria-label="القائمة"><svg class="i" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+  <div class="theme-pill" role="group" aria-label="المظهر">
+    <button id="thLight" aria-label="فاتح"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg></button>
+    <button id="thDark" aria-label="داكن"><svg class="i" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg></button>
+  </div>
+
+  <div id="chat"><div class="wrap" id="wrap"></div></div>
+
+  <div class="stage">
+    <div class="hero">
+      <div class="logo-lg"><svg viewBox="0 0 122 72"><use href="#logo"/></svg></div>
+      <div class="word">BILAL<b>X</b></div>
+      <p>مساعدك الذكي في كل ما تحتاجه</p>
+    </div>
+
+    <div class="cwrap">
+      <div class="attach" id="attach"></div>
+      <div class="pill">
+        <button class="clip" id="clip" aria-label="إرفاق ملف نصي" title="إرفاق ملف نصي">
+          <svg class="i" viewBox="0 0 24 24" style="width:22px;height:22px"><path d="m20 11.5-8.2 8.2a5 5 0 0 1-7.1-7.1l8.5-8.5a3.3 3.3 0 0 1 4.7 4.7l-8.5 8.5a1.7 1.7 0 0 1-2.4-2.4l7.8-7.8"/></svg>
+        </button>
+        <textarea id="input" dir="auto" rows="1" placeholder="اكتب رسالتك هنا..."></textarea>
+        <button class="send" id="send" disabled aria-label="إرسال"></button>
+      </div>
+      <input type="file" id="file" hidden accept=".txt,.md,.csv,.json,.js,.ts,.jsx,.tsx,.py,.html,.css,.java,.c,.cpp,.cs,.go,.rs,.php,.sql,.xml,.yml,.yaml,.log,.sh,.ini,.toml">
+      <div class="note">قد يخطئ BILALX. تحقق من المعلومات المهمة.</div>
+    </div>
+
+    <div class="chips">
+      <button class="chip" data-chip="images"><svg class="i" viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="17" height="15" rx="3"/><circle cx="9" cy="10" r="1.6"/><path d="m4 17 5-4.5 3.5 3L15 13.5l5 4.5"/></svg>توليد الصور</button>
+      <button class="chip" data-chip="code"><svg class="i" viewBox="0 0 24 24"><path d="m8.5 8-4 4 4 4M15.5 8l4 4-4 4M13.5 5.5l-3 13"/></svg>كتابة الأكواد</button>
+      <button class="chip" data-chip="files"><svg class="i" viewBox="0 0 24 24"><path d="M14 3.5H8A2.5 2.5 0 0 0 5.5 6v12A2.5 2.5 0 0 0 8 20.5h8a2.5 2.5 0 0 0 2.5-2.5V8z"/><path d="M14 3.5V8h4.5M9 13h6M9 16.5h4"/></svg>تحليل الملفات</button>
+      <button class="chip" data-chip="soon"><svg class="i" viewBox="0 0 24 24"><path d="M12 3.5c.5 4.6 2.4 6.5 7 7-4.6.5-6.5 2.4-7 7-.5-4.6-2.4-6.5-7-7 4.600-.5 6.500-2.400 7-7z"/></svg>المزيد قريباً</button>
+    </div>
+  </div>
+</main>
+
+<div class="modal" id="modal"><div class="mcard" id="mcard"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   الإعدادات — ضع مفتاح Groq هنا
+   احصل عليه مجانًا من: https://console.groq.com/keys
+   ============================================================ */
+const GROQ_API_KEY = "ضع_مفتاح_GROQ_هنا";
+
+const API_URL = "https://api.groq.com/openai/v1/chat/completions";
+const BASE_PROMPT = "أنت BILALX، مساعد ذكاء اصطناعي ودود وذكي. أجب بنفس لغة المستخدم وبشكل واضح ومنظم. استخدم Markdown عند الحاجة، وضع الأكواد داخل كتل برمجية.";
+const CODE_PROMPT = "ركّز على البرمجة: قدّم أكواداً كاملة وصحيحة داخل كتل برمجية مع شرح مختصر للخطوات.";
+const MODELS = [
+  ["llama-3.3-70b-versatile","Llama 3.3 70B","الأقوى للاستخدام العام"],
+  ["llama-3.1-8b-instant","Llama 3.1 8B","الأسرع، للأسئلة البسيطة"],
+  ["openai/gpt-oss-120b","GPT-OSS 120B","للمهام المعقدة والاستدلال"],
+  ["openai/gpt-oss-20b","GPT-OSS 20B","متوازن بين السرعة والجودة"]
+];
+const MAX_FILE_CHARS = 12000;
+
+const $ = id => document.getElementById(id);
+const store = {
+  get(k, d){ try{ return JSON.parse(localStorage.getItem(k)) ?? d }catch(e){ return d } },
+  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)) }catch(e){} }
+};
+let convs = store.get("bilalx_convs", []);
+let currentId = null, controller = null, busy = false;
+let model = store.get("bilalx_model", MODELS[0][0]);
+let custom = store.get("bilalx_custom", "");
+let codeMode = store.get("bilalx_code", false);
+let theme = store.get("bilalx_theme", "dark");
+let view = convs.length ? "history" : null;
+let pendingFile = null;
+if (!MODELS.some(m => m[0] === model)) model = MODELS[0][0];
+
+const SVG = {
+  send:'<svg class="i" viewBox="0 0 24 24" style="width:19px;height:19px"><path d="M21 3 10.5 13.5M21 3l-6.5 18-4-7.5L3 9.5z"/></svg>',
+  stop:'<svg viewBox="0 0 24 24" style="width:16px;height:16px"><rect x="6" y="6" width="12" height="12" rx="2.5" fill="currentColor"/></svg>',
+  bm:'<svg class="i" viewBox="0 0 24 24"><path d="M6.5 4h11a1 1 0 0 1 1 1v15l-6.5-4-6.5 4V5a1 1 0 0 1 1-1z"/></svg>',
+  del:'<svg class="i" viewBox="0 0 24 24"><path d="M5 7h14M10 7V4.5h4V7M7 7l.8 12.5h8.4L17 7"/></svg>'
+};
+$("send").innerHTML = SVG.send;
+
+/* ---------- المظهر ---------- */
+function applyTheme(){
+  document.documentElement.dataset.theme = theme;
+  $("thLight").classList.toggle("on", theme === "light");
+  $("thDark").classList.toggle("on", theme === "dark");
+  store.set("bilalx_theme", theme);
+}
+$("thLight").onclick = () => { theme = "light"; applyTheme() };
+$("thDark").onclick = () => { theme = "dark"; applyTheme() };
+
+/* ---------- Toast + Modal ---------- */
+let tt;
+function toast(msg){ const t = $("toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(tt); tt = setTimeout(() => t.classList.remove("show"), 2200) }
+function openModal(builder){ const c = $("mcard"); c.innerHTML = ""; builder(c); $("modal").classList.add("show") }
+function closeModal(){ $("modal").classList.remove("show") }
+$("modal").addEventListener("click", e => { if (e.target === $("modal")) closeModal() });
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeModal() });
+function h(tag, props = {}, ...kids){
+  const el = document.createElement(tag);
+  Object.entries(props).forEach(([k,v]) => k === "class" ? el.className = v : k.startsWith("on") ? el[k] = v : el.setAttribute(k, v));
+  kids.forEach(k => el.append(k)); return el;
+}
+
+function modelsModal(){
+  openModal(c => {
+    c.append(h("h3", {}, "النماذج"));
+    MODELS.forEach(([id, name, desc]) => {
+      const b = h("button", { class: "opt" + (id === model ? " on" : ""), onclick: () => { model = id; store.set("bilalx_model", id); closeModal(); toast("تم اختيار " + name) } },
+        h("span", {}, name), h("small", {}, desc));
+      c.append(b);
+    });
+  });
+}
+function settingsModal(){
+  openModal(c => {
+    c.append(h("h3", {}, "الإعدادات"));
+    c.append(h("label", { for: "customTxt" }, "تعليمات مخصصة لـ BILALX (اختياري)"));
+    const ta = h("textarea", { id: "customTxt", dir: "auto", placeholder: "مثال: خاطبني باسم بلال وأجب باختصار" }); ta.value = custom;
+    c.append(ta);
+    c.append(h("div", { class: "mbtns" },
+      h("button", { class: "btn pri", onclick: () => { custom = ta.value.trim(); store.set("bilalx_custom", custom); closeModal(); toast("تم الحفظ") } }, "حفظ"),
+      h("button", { class: "btn", onclick: () => { exportChat(); } }, "تصدير المحادثة الحالية"),
+      h("button", { class: "btn dng", onclick: () => { closeModal(); clearAll() } }, "حذف كل المحادثات")
+    ));
+  });
+}
+function exportChat(){
+  const c = current(); if (!c || !c.messages.length) { toast("افتح محادثة أولاً لتصديرها"); return }
+  const txt = c.messages.map(m => (m.role === "user" ? "أنا: " : "BILALX: ") + (m.shown ?? m.content)).join("\n\n");
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([txt], { type: "text/plain;charset=utf-8" }));
+  a.download = "bilalx-" + c.id + ".txt"; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+function clearAll(){
+  if (busy || !convs.length) return;
+  if (confirm("هل تريد حذف كل المحادثات؟")) { convs = []; save(); currentId = null; view = null; renderChat(); renderSub() }
+}
+
+/* ---------- Markdown ---------- */
+marked.setOptions({ breaks: true, gfm: true });
+function render(md){
+  const html = DOMPurify.sanitize(marked.parse(md || ""));
+  const box = document.createElement("div"); box.className = "md"; box.innerHTML = html;
+  box.querySelectorAll("a").forEach(a => { a.target = "_blank"; a.rel = "noopener noreferrer"; });
+  box.querySelectorAll("pre").forEach(pre => {
+    const code = pre.querySelector("code"); if(!code) return;
+    try{ hljs.highlightElement(code) }catch(e){}
+    const lang = ([...code.classList].find(c => c.startsWith("language-")) || "").replace("language-","") || "code";
+    const bar = document.createElement("div"); bar.className = "bar";
+    bar.innerHTML = `<span>${lang}</span><button type="button">نسخ</button>`;
+    bar.querySelector("button").onclick = async ev => {
+      try{ await navigator.clipboard.writeText(code.innerText); ev.target.textContent = "تم النسخ ✓"; setTimeout(()=>ev.target.textContent="نسخ",1500) }catch(e){}
+    };
+    pre.prepend(bar);
+  });
+  return box;
+}
+
+/* ---------- القائمة الجانبية ---------- */
+const current = () => convs.find(c => c.id === currentId);
+const save = () => store.set("bilalx_convs", convs);
+const closeSide = () => { $("sidebar").classList.remove("open"); $("overlay").classList.remove("show") };
+
+function renderSub(){
+  const el = $("sub"); el.innerHTML = "";
+  document.querySelectorAll(".nav button").forEach(b => {
+    const a = b.dataset.act;
+    b.classList.toggle("active", a === view || (a === "new" && !view && !current()));
+  });
+  if (!view) return;
+  const list = view === "bookmarks" ? convs.filter(c => c.bm) : convs;
+  el.append(h("h5", {}, view === "bookmarks" ? "المحادثات ذات العلامة" : "المحادثات السابقة"));
+  if (!list.length) { el.append(h("div", { class: "none" }, view === "bookmarks" ? "لا توجد علامات بعد." : "لا توجد محادثات بعد.")); return }
+  list.forEach(c => {
+    const row = h("div", { class: "row" + (c.id === currentId ? " cur" : "") });
+    const t = h("button", { class: "t", onclick: () => { openConv(c.id); closeSide() } }, c.title);
+    const bm = h("button", { class: "mini" + (c.bm ? " on" : ""), "aria-label": "علامة", onclick: () => { c.bm = !c.bm; save(); renderSub() } });
+    bm.innerHTML = SVG.bm; if (c.bm) bm.querySelector("svg").style.fill = "currentColor";
+    const del = h("button", { class: "mini del", "aria-label": "حذف", onclick: () => deleteConv(c.id) }); del.innerHTML = SVG.del;
+    row.append(t, bm, del); el.append(row);
+  });
+}
+function newConv(){ if (busy) return; currentId = null; clearFile(); renderChat(); renderSub(); $("input").focus() }
+function openConv(id){ if (busy) return; currentId = id; renderChat(); renderSub() }
+function deleteConv(id){
+  if (busy) return;
+  convs = convs.filter(c => c.id !== id); save();
+  if (currentId === id) currentId = null;
+  renderChat(); renderSub();
+}
+document.querySelectorAll(".nav button").forEach(b => b.onclick = () => {
+  const a = b.dataset.act;
+  if (a === "new") { view = null; newConv(); closeSide() }
+  else if (a === "history" || a === "bookmarks") { view = view === a ? null : a; renderSub() }
+  else if (a === "models") { closeSide(); modelsModal() }
+  else if (a === "settings") { closeSide(); settingsModal() }
+});
+$("newIcon").onclick = () => { view = null; newConv(); closeSide() };
+$("userBtn").onclick = () => { closeSide(); settingsModal() };
+$("menuBtn").onclick = () => { $("sidebar").classList.add("open"); $("overlay").classList.add("show") };
+$("overlay").onclick = closeSide;
+
+/* ---------- العرض ---------- */
+function renderChat(){
+  const wrap = $("wrap"); wrap.innerHTML = "";
+  const c = current();
+  const has = !!(c && c.messages.length);
+  $("main").className = has ? "chatting" : "empty";
+  if (!has) return;
+  c.messages.forEach(m => addMsg(m.role, m.content, m.shown));
+  scrollDown(true);
+}
+function botMark(){ const d = h("div", { class: "mark" }); d.innerHTML = '<svg viewBox="0 0 122 72"><use href="#logo"/></svg>'; return d }
+function addMsg(role, content, shown){
+  const row = document.createElement("div");
+  row.className = "msg " + (role === "user" ? "me" : "bot");
+  if (role === "user") {
+    const b = h("div", { class: "bubble" });
+    b.append(document.createTextNode(shown ?? content)); row.append(b);
+  } else {
+    const b = h("div", { class: "bubble" });
+    row.append(botMark(), b);
+    if (content) { b.appendChild(render(content)); b.appendChild(actionsFor(content)) }
+  }
+  $("wrap").appendChild(row); return row;
+}
+function actionsFor(text){
+  const a = document.createElement("div"); a.className = "actions";
+  const cp = document.createElement("button"); cp.textContent = "نسخ";
+  cp.onclick = async () => { try{ await navigator.clipboard.writeText(text); cp.textContent = "تم النسخ ✓"; setTimeout(()=>cp.textContent="نسخ",1500) }catch(e){} };
+  a.appendChild(cp); return a;
+}
+function scrollDown(force){
+  const ch = $("chat");
+  if (force || ch.scrollHeight - ch.scrollTop - ch.clientHeight < 160) ch.scrollTop = ch.scrollHeight;
+}
+
+/* ---------- الملفات ---------- */
+function renderAttach(){
+  const el = $("attach"); el.innerHTML = ""; el.classList.toggle("show", !!pendingFile);
+  if (!pendingFile) return;
+  const x = h("button", { "aria-label": "إزالة", onclick: clearFile }, "✕");
+  el.append(h("span", {}, "📎 " + pendingFile.name, x));
+}
+function clearFile(){ pendingFile = null; $("file").value = ""; renderAttach(); autoGrow() }
+$("clip").onclick = () => $("file").click();
+$("file").onchange = async e => {
+  const f = e.target.files[0]; if (!f) return;
+  if (f.size > 500000) { toast("الملف كبير. الحد الأقصى 500KB"); $("file").value = ""; return }
+  try {
+    let txt = await f.text(), cut = false;
+    if (txt.includes("\u0000")) { toast("هذا الملف ليس نصياً"); $("file").value = ""; return }
+    if (txt.length > MAX_FILE_CHARS) { txt = txt.slice(0, MAX_FILE_CHARS); cut = true }
+    pendingFile = { name: f.name, text: txt, cut }; renderAttach(); autoGrow();
+    if (cut) toast("تم اقتطاع الملف إلى أول " + MAX_FILE_CHARS + " حرف");
+    $("input").focus();
+  } catch(err){ toast("تعذرت قراءة الملف") }
+};
+
+/* ---------- الشرائح ---------- */
+function applyChips(){ document.querySelector('[data-chip="code"]').classList.toggle("on", codeMode); store.set("bilalx_code", codeMode) }
+document.querySelectorAll(".chip").forEach(b => b.onclick = () => {
+  const k = b.dataset.chip;
+  if (k === "code") { codeMode = !codeMode; applyChips(); toast(codeMode ? "وضع البرمجة مفعّل" : "تم إيقاف وضع البرمجة"); $("input").focus() }
+  else if (k === "files") $("file").click();
+  else toast("هذه الميزة قادمة قريباً");
+});
+function systemPrompt(){ return [BASE_PROMPT, codeMode ? CODE_PROMPT : "", custom].filter(Boolean).join("\n") }
+
+/* ---------- الإرسال ---------- */
+function setBusy(v){
+  busy = v; const s = $("send");
+  s.innerHTML = v ? SVG.stop : SVG.send;
+  s.disabled = v ? false : !($("input").value.trim() || pendingFile);
+}
+async function send(){
+  let text = $("input").value.trim();
+  if ((!text && !pendingFile) || busy) return;
+  if (!GROQ_API_KEY || GROQ_API_KEY.includes("ضع_مفتاح")) {
+    alert("لم يتم وضع مفتاح Groq بعد. افتح الملف index.html وضع المفتاح في المتغير GROQ_API_KEY.");
+    return;
+  }
+  let shown = text, content = text;
+  if (pendingFile) {
+    const f = pendingFile;
+    if (!text) text = "حلّل هذا الملف ولخّص محتواه.";
+    content = `${text}\n\n--- الملف: ${f.name}${f.cut ? " (مقتطع)" : ""} ---\n\`\`\`\n${f.text}\n\`\`\``;
+    shown = `${text}\n📎 ${f.name}`;
+  }
+  let c = current();
+  if (!c) {
+    c = { id: Date.now().toString(36), title: (text).slice(0, 40), messages: [] };
+    convs.unshift(c); currentId = c.id;
+  }
+  const first = !c.messages.length;
+  c.messages.push({ role: "user", content, shown }); save();
+  if (first) { $("wrap").innerHTML = ""; $("main").className = "chatting" }
+  $("input").value = ""; clearFile(); autoGrow(); renderSub();
+  addMsg("user", content, shown);
+
+  const row = addMsg("bot", "");
+  const bubble = row.querySelector(".bubble");
+  bubble.innerHTML = `<div class="typing"><i></i><i></i><i></i></div>`;
+  scrollDown(true);
+  setBusy(true);
+  controller = new AbortController();
+  let full = "";
+
+  try {
+    const res = await fetch(API_URL, {
+      method: "POST",
+      signal: controller.signal,
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + GROQ_API_KEY },
+      body: JSON.stringify({
+        model, stream: true, temperature: 0.7,
+        messages: [{ role: "system", content: systemPrompt() }, ...c.messages.slice(-30).map(m => ({ role: m.role, content: m.content }))]
+      })
+    });
+    if (!res.ok) {
+      let detail = ""; try{ detail = (await res.json()).error?.message || "" }catch(e){}
+      throw new Error(res.status === 401 ? "مفتاح Groq غير صحيح أو منتهي." :
+                      res.status === 429 ? "تجاوزت الحد المجاني مؤقتاً. حاول بعد قليل." :
+                      res.status === 413 ? "الرسالة أو الملف كبير جداً." :
+                      (detail || "خطأ " + res.status));
+    }
+    const reader = res.body.getReader(), dec = new TextDecoder();
+    let buf = "", last = 0;
+    while (true) {
+      const { done, value } = await reader.read(); if (done) break;
+      buf += dec.decode(value, { stream: true });
+      const lines = buf.split("\n"); buf = lines.pop();
+      for (const l of lines) {
+        const s = l.trim(); if (!s.startsWith("data:")) continue;
+        const d = s.slice(5).trim(); if (d === "[DONE]") continue;
+        try { full += JSON.parse(d).choices?.[0]?.delta?.content || "" } catch(e){}
+      }
+      const now = performance.now();
+      if (now - last > 60) { bubble.replaceChildren(render(full)); scrollDown(); last = now }
+    }
+    bubble.replaceChildren(render(full)); bubble.appendChild(actionsFor(full));
+    c.messages.push({ role: "assistant", content: full }); save();
+  } catch (e) {
+    if (e.name === "AbortError") {
+      if (full) { bubble.replaceChildren(render(full)); c.messages.push({ role: "assistant", content: full }); save() }
+      else { row.remove(); c.messages.pop(); save() }
+    } else {
+      bubble.innerHTML = `<div class="err"></div>`;
+      bubble.firstChild.textContent = "⚠ " + (e.message === "Failed to fetch" ? "تعذر الاتصال بالإنترنت." : e.message);
+      c.messages.pop(); save();
+    }
+  } finally {
+    controller = null; setBusy(false); scrollDown(); $("input").focus();
+  }
+}
+
+/* ---------- الإدخال ---------- */
+function autoGrow(){
+  const t = $("input"); t.style.height = "auto"; t.style.height = Math.min(t.scrollHeight, 170) + "px";
+  if (!busy) $("send").disabled = !(t.value.trim() || pendingFile);
+}
+$("input").addEventListener("input", autoGrow);
+$("input").addEventListener("keydown", e => {
+  if (e.key === "Enter" && !e.shiftKey && !e.isComposing) { e.preventDefault(); send() }
+});
+$("send").onclick = () => busy ? controller?.abort() : send();
+
+applyTheme(); applyChips(); renderChat(); renderSub();
+</script>
+</body>
+</html>
